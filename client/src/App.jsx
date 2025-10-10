@@ -1,10 +1,23 @@
 import React from 'react'
-
+import { BrowserRouter, Route, Router, Routes } from 'react-router-dom';
+import Home from './pages/Home.jsx';
+import About from './pages/About.jsx';
+import Signup from './pages/Signup.jsx';
+import Signin from './pages/Signin.jsx';
+import Profile from './pages/Profile.jsx';
+import NotFound from './pages/NotFound.jsx';
 function  App() {
   return (
-    <div className='bg-black text-amber-300 flex justify-center font-bold h-screen items-center text-4xl text-shadow-2xs text-shadow-blue-700'>
-      Welcome to StaySpot.pk
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/about" element={<About />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/signin" element={<Signin />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
