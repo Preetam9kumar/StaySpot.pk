@@ -1,11 +1,11 @@
 import { set } from 'mongoose';
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 function Signup() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   }
@@ -20,39 +20,38 @@ function Signup() {
       },
       body: JSON.stringify(formData),
     });
+    console.log(res);
     const data = await res.json();
-    if(data.success == false) {
+    if (data.user) {
+      setLoading(false);
+      alert(data.message);
+      Navigate('/signin')
+    } else if (data.success == false) {
       setError(data.message);
       setLoading(false);
-      return;
-    } else if(data.success == true) {
-      setLoading(false);
-    } else if (data.error.code === 11000) {
-      setError('User already exists with ' + JSON.stringify(data.error.keyValue));
-      setLoading(false);
     } else {
-      setError(data.error.message);
+      console.log(data);
       setLoading(false);
     }
   }
 
   return (
-    <div className='max-w-lg mx-auto mt-10 p-6 border rounded-lg shadow-lg'>
-      <h1 className='text-3xl text-center font-semibold'>Sign Up</h1>
-        <form className='flex flex-col gap-4' onSubmit={handleSubmit}>
-          <input type="text" className='border p-3 rounded-lg' placeholder='username' id="username" onChange={handleChange} />
-          <input type="email" className='border p-3 rounded-lg' placeholder='email' id="email" onChange={handleChange} />
-          <input type="password" className='border p-3 rounded-lg' placeholder='password' id="password" onChange={handleChange} />
-          <button className='bg-slate-700 text-white p-3 rounded-lg hover:opacity-8S0 uppercase disabled:opacity-50 cursor-pointer' disabled={loading}>
-            {loading ? 'Signing Up...' : 'Sign Up'}</button>
-        </form>
+    <div className='flex items-center justify-center flex-col h-[100vh] bg-slate-50 lg:mt-5'>
+      <form className='flex flex-col gap-6 shadow-2xl shadow-gray-600 rounded-2xl  w-3/4 lg:w-1/3 mx-auto p-6 bg-slate-100' onSubmit={handleSubmit}>
+        <h1 className='text-3xl text-center font-semibold py-8'>Sign Up</h1>
+        <input type="text" className='border p-3 rounded-lg' placeholder='username' id="username" onChange={handleChange} />
+        <input type="email" className='border p-3 rounded-lg' placeholder='email' id="email" onChange={handleChange} />
+        <input type="password" className='border p-3 rounded-lg' placeholder='password' id="password" onChange={handleChange} />
+        <button className='bg-slate-700 text-white p-3 rounded-lg hover:opacity-8S0 uppercase disabled:opacity-50 cursor-pointer' disabled={loading}>
+          {loading ? 'Signing Up...' : 'Sign Up'}</button>
         <div className='flex gap-2 mt-5'>
           <p className='text-center'>Already have an account? </p>
           <Link to="/signin" className='text-blue-700 hover:underline cursor-pointer'>Sign In</Link>
         </div>
         {error && <p className='text-red-500 text-center mt-4'>{error}</p>}
-      </div>
-    )
-  }
+      </form>
+    </div>
+  )
+}
 
-  export default Signup;
+export default Signup;

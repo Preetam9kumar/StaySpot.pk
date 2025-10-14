@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom';
 function Header() {
     return (
-        <header className='bg-slate-200 shadow-md'>
+        <header className='bg-slate-200 shadow-md absolute w-full top-0'>
             <div className='flex justify-between items-center mx-auto max-w-6xl p-3'>
                 <Link to="/"><div className='text-lg text-yellow-900 text-sm sm:text-xl font-extrabold font-sans text-shadow-2xs text-shadow-amber-900'>StaySpot.pk</div></Link>
                 <form className='bg-slate-100 p-3 rounded-lg flex items-center space-x-2'>
