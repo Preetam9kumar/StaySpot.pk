@@ -1,6 +1,7 @@
 import { set } from 'mongoose';
 import React, { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom';
+import OAuth from '../components/OAuth';
 function Signup() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(null);
@@ -44,6 +45,7 @@ function Signup() {
         <input type="password" className='border p-3 rounded-lg' placeholder='password' id="password" onChange={handleChange} />
         <button className='bg-slate-700 text-white p-3 rounded-lg hover:opacity-8S0 uppercase disabled:opacity-50 cursor-pointer' disabled={loading}>
           {loading ? 'Signing Up...' : 'Sign Up'}</button>
+        <OAuth/>
         <div className='flex gap-2 mt-5'>
           <p className='text-center'>Already have an account? </p>
           <Link to="/signin" className='text-blue-700 hover:underline cursor-pointer'>Sign In</Link>

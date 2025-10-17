@@ -15,6 +15,10 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true
+    },
+    avatar: {
+        type: String,
+        default: 'https://img.icons8.com/?size=100&id=84898&format=png&color=000000'
     }
 }, { timestamps: true });
 

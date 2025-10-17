@@ -10,7 +10,10 @@ export default defineConfig({
         target: 'http://localhost:3000',
         secure: false
       }
-    }
+    },
+    allowedHosts: [
+      'f05d699fc53f.ngrok-free.app'
+    ]
   },
   plugins: [tailwindcss(), react()],
 })

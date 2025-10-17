@@ -1,9 +1,13 @@
 import React, { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice.js';
+import OAuth from '../components/OAuth.jsx';
 function Signin() {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const {error,loading} = useSelector((state)=> state.user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -11,8 +15,9 @@ function Signin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    const res = await fetch('/api/auth/signup', {
+    try{
+    dispatch(signInStart());
+    const res = await fetch('/api/auth/signin', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,17 +26,14 @@ function Signin() {
     });
     console.log(res);
     const data = await res.json();
-    if (data.user) {
-      setLoading(false);
-      alert(data.message);
-      Navigate('/')
-    } else if (data.success == false) {
-      setError(data.message);
-      setLoading(false);
-    } else {
-      console.log(data);
-      setLoading(false);
+    if (data.success == false) {
+      dispatch(signInFailure(data.message))
     }
+    dispatch(signInSuccess(data))
+    navigate('/');
+  }catch(error){
+    dispatch(signInFailure(error.message));
+  }
   }
 
   return (
@@ -43,6 +45,7 @@ function Signin() {
         <input type="password" className='border p-3 rounded-lg' placeholder='password' id="password" onChange={handleChange} />
         <button className='bg-slate-700 text-white p-3 rounded-lg hover:opacity-8S0 uppercase disabled:opacity-50 cursor-pointer' disabled={loading}>
           {loading ? 'Signing In...' : 'Sign In'}</button>
+        <OAuth/>
         <div className='flex gap-2 mt-5'>
           <p className='text-center'>You don't have an account? </p>
           <Link to="/signup" className='text-blue-700 hover:underline cursor-pointer'>Sign Up</Link>
