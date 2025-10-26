@@ -28,6 +28,7 @@ function Signin() {
     const data = await res.json();
     if (data.success == false) {
       dispatch(signInFailure(data.message))
+      return;
     }
     dispatch(signInSuccess(data))
     navigate('/');
