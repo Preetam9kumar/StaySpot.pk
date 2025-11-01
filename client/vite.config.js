@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
-// https://vite.dev/config/
 
 export default defineConfig({
   server: {
@@ -10,10 +9,7 @@ export default defineConfig({
         target: 'http://localhost:3000',
         secure: false
       }
-    },
-    allowedHosts: [
-      'f05d699fc53f.ngrok-free.app'
-    ]
+    }
   },
   plugins: [tailwindcss(), react()],
 })

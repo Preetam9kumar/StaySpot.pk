@@ -8,6 +8,7 @@ import Profile from './pages/Profile.jsx';
 import NotFound from './pages/NotFound.jsx';
 import Header from './components/Header.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
+import CreateListing from './pages/CreateListing.jsx';
 function App() {
   return (
     <BrowserRouter>
@@ -19,6 +20,7 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<Profile />} />
+          <Route path="/create-listing" element={<CreateListing />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
