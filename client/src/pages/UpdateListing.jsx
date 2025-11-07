@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-
-function CreateListing() {
+import { useParams } from 'react-router-dom';
+function UpdateListing() {
     const [files, setFiles] = useState([]);
     const { currentUser } = useSelector(state => state.user);
     const [formData, setFormData] = useState({
@@ -23,6 +23,7 @@ function CreateListing() {
     });
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(null);
+    const params = useParams();
 
     const storeImage = async (file) => {
         return new Promise((resolve) => {
@@ -61,7 +62,7 @@ function CreateListing() {
     };
 
     const handleFormSubmit = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         try {
 
             if (formData.imageUrls.length < 1) {
@@ -71,7 +72,7 @@ function CreateListing() {
                 setError('Discouted price must be less then regular price.')
             }
             setLoading(true);
-            const res = await axios.post("/api/listing/create", formData, {
+            const res = await axios.put(`/api/listing/update/${params.listingId}`, formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             if (res.data) {
@@ -95,9 +96,23 @@ function CreateListing() {
         }));
     };
 
+    useEffect(() => {
+        const getListing = async () => {
+            const listingId = params.listingId;
+            const res = await axios.get(`/api/listing/get/${listingId}`);
+            const data = res.data;
+            if(!data){
+                console.log(data.message);
+                return;
+            }
+            setFormData(data);
+        }
+        getListing();
+    },[])
+
     return (
         <main className='mt-18 p-3 max-w-4xl mx-auto'>
-            <div className='text-3xl font-semibold text-center my-7'>Create Listing</div>
+            <div className='text-3xl font-semibold text-center my-7'>Update Listing</div>
             <form className='flex flex-col sm:flex-row gap-6'>
                 <div className='flex flex-col gap-4 flex-1'>
                     <input type="text" placeholder='Name' className='border p-3 rounded-lg' id="name" maxLength='62' minLength='10' value={formData.name} onChange={handleChange} required />
@@ -180,7 +195,7 @@ function CreateListing() {
                         </div>
                     )}
                     <button onClick={handleFormSubmit} className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'>
-                        {loading ? 'Creating Listing...' : 'Create Listing'}
+                        {loading ? 'Updating Listing...' : 'Update Listing'}
                     </button>
                     {error && <p className='text-red-700 text-sm'>{error}</p>}
                 </div>
@@ -189,4 +204,4 @@ function CreateListing() {
     );
 }
 
-export default CreateListing
+export default UpdateListing;

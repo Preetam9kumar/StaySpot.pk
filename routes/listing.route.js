@@ -1,8 +1,12 @@
 import express from 'express';
-import createListing from '../controllers/listing.cotroller.js';
+import multer from 'multer';
 import { verifyUser } from '../utils/verifyUser.js';
+import { createListing, deleteListing, updateListing, getListing} from '../controllers/listing.cotroller.js';
 const router = express.Router();
+const upload = multer({ dest: "uploads/" }); // temp local folder
 
-router.post('/create', verifyUser, createListing);
-
+router.post('/create', verifyUser,upload.array("imageUrls", 6), createListing);
+router.delete('/delete/:id',verifyUser, deleteListing);
+router.put('/update/:id',verifyUser,upload.array('imageUrls', 6),updateListing);
+router.get('/get/:id',getListing);
 export default router;

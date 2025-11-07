@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import axios from "axios";
 import { updateUserStart, updateUserSuccess, updateUserFailure, deleteUserStart, deleteUserSuccess, deleteUserFailure, signOutUserStart, signOutUserSuccess, signOutUserFailure } from "../redux/user/userSlice";
 import { useDispatch, useSelector } from "react-redux";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 export default function Profile() {
   const fileInputRef = useRef(null);
   const { currentUser } = useSelector((state) => state.user);
@@ -14,8 +14,10 @@ export default function Profile() {
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(currentUser.avatar);
   const { loading, error } = useSelector((state) => state.user);
+  const [showListingError, setShowListingError] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [userListings, setUserListings] = useState(null);
   const dispatch = useDispatch();
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -45,6 +47,7 @@ export default function Profile() {
         dispatch(updateUserFailure(res.data.message));
         return;
       }
+      setUpdateSuccess(true);
       dispatch(updateUserSuccess(updatedUser));
     } catch (error) {
       dispatch(updateUserFailure(error.message));
@@ -84,6 +87,34 @@ export default function Profile() {
     }
   }
 
+  const handleShowListings = async () => {
+    try {
+      setShowListingError(false);
+      const res = await axios.get(`/api/user/listings/${currentUser._id}`);
+      const data = await res.data;
+      if (!data) {
+        setShowListingError(true)
+        return
+      }
+      setUserListings(data);
+    } catch (error) {
+      setShowListingError(true);
+    }
+  }
+
+  const handleListingDelete =async (listingId) => {
+    try{
+      const res = await axios.delete(`/api/listing/delete/${listingId}`);
+      const data = res.data;
+      if(!data){
+        console.log(data.message);
+        return;
+      }
+      setUserListings((prev) => prev.filter((listing)=>{listing._id !== listingId}));
+    }catch(error){
+      console.log(error.message);
+    }
+  }
   return (
     <div className="p-3 max-w-lg mx-auto mt-18">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -140,16 +171,35 @@ export default function Profile() {
           {loading ? "Updating..." : "Update"}
         </button>
         <Link className="bg-green-700 text-white rounded-lg p-3 uppercase hover:opacity-95 text-center" to="/create-listing">Create Listing</Link>
-        <div className="flex justify-between mt-5">
-          <span onClick={handleDeleteUser} className="text-red-700 cursor-pointer">
-            Delete Account
-          </span>
-          <span onClick={handleSingOut} className="text-red-700 cursor-pointer">
-            Sign out
-          </span>
-        </div>
-        <p className="text-red-700 mt-5">{error ? error : " "}</p>
       </form>
+      <div className="flex justify-between mt-5">
+        <span onClick={handleDeleteUser} className="text-red-700 cursor-pointer">
+          Delete Account
+        </span>
+        <span onClick={handleSingOut} className="text-red-700 cursor-pointer">
+          Sign out
+        </span>
+      </div>
+      <p className="text-red-700 mt-5">{error ? error : " "}</p>
+      <p className="text-green-700 mt-5">{updateSuccess ? "User updated successfully!" : " "}</p>
+      <button onClick={handleShowListings} className="text-green-700 w-full">Show Listings</button>
+      <p className="text-red-700 mt-5">{showListingError ? 'Error showing listings' : ''}</p>
+      {userListings && userListings.length > 0 &&
+        <div className="flex flex-col gap-4">
+          <h1 className="text-center mt-7 text-2xl font-semibold">Your Listings</h1>
+          {userListings.map((listing) => (
+            <div key={listing._id} className="border rounded-lg p-3 flex justify-between items-center gap-4">
+              <Link to={`/listing/${listing._id}`} >
+                <img src={listing.imageUrls[0]} alt="listing cover" className="h-16 w-16 object-contain" />
+                <p>{listing.name}</p>
+              </Link>
+              <div className="flex flex-col items-center">
+                <button onClick={()=>handleListingDelete(listing._id)} className="text-red-700 uppercase" >Delete</button>
+                <Link to={`/update-listing/${listing._id}`}><button className="text-green-700 uppercase">Edit</button></Link>
+              </div>
+            </div>
+          ))}
+        </div>}
     </div>
   );
 }

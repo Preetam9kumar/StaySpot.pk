@@ -29,6 +29,10 @@ const listingSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    office:{
+        type: Boolean,
+        required: true,
+    },
     furnished:{
         type: Boolean,
         required: true,
@@ -37,11 +41,11 @@ const listingSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
-    type:{
-        type: String,
+    rent:{
+        type: Boolean,
         required: true,
     },
-    offer:{
+    sale:{
         type: Boolean,
         required: true,
     },
