@@ -109,7 +109,7 @@ function CreateListing() {
                             <span>Sale</span>
                         </div>
                         <div className='flex gap-2'>
-                            <input className='w-5' type="checkbox" id="rent" checked={formData.rent} onChange={handleChange} />
+                            <input className='w-5' type="checkbox" id="rent" checked={formData.rent}  onChange={handleChange}/>
                             <span>Rent</span>
                         </div>
                         <div className='flex gap-2'>

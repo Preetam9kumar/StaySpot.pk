@@ -33,13 +33,13 @@ export const updateProfile = async (req, res, next) => {
       $set: dataToUpdate
     }, { new: true });
 
-    if(!updatedUser) {
+    if (!updatedUser) {
       return next(errorHandler(404, "User not found"));
     }
     const { password, ...rest } = updatedUser._doc;
 
     res.status(200).json(
-      {success: true, message: "Profile updated successfully", user: {...rest}}
+      { success: true, message: "Profile updated successfully", user: { ...rest } }
     );
   } catch (error) {
     next(errorHandler(500, "Failed to update profile"));
@@ -60,17 +60,28 @@ export const deleteUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-} 
+}
 
-export const getUserListings = async (req, res, next) =>{
-  if(req.user.id === req.params.id){
-    try{
-      const listings = await Listing.find({userRef: req.params.id});
+export const getUserListings = async (req, res, next) => {
+  if (req.user.id === req.params.id) {
+    try {
+      const listings = await Listing.find({ userRef: req.params.id });
       res.status(200).json(listings);
-    }catch(error){
+    } catch (error) {
       next(error);
     }
-  }else{
-    return next(errorHandler(401,"You can view only your own listings!"));
+  } else {
+    return next(errorHandler(401, "You can view only your own listings!"));
+  }
+}
+
+export const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return next(errorHandler(404, 'User not found !'));
+    const { password: pass, ...rest } = user._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
   }
 }
