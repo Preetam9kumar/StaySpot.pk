@@ -29,7 +29,7 @@ const listingSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    office:{
+    offer:{
         type: Boolean,
         required: true,
     },

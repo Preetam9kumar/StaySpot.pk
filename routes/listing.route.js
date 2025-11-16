@@ -3,7 +3,7 @@ import multer from 'multer';
 import { verifyUser } from '../utils/verifyUser.js';
 import { createListing, deleteListing, updateListing, getListing, getListings} from '../controllers/listing.cotroller.js';
 const router = express.Router();
-const upload = multer({ dest: "uploads/" }); // temp local folder
+const upload = multer({ dest: "stayspot/listing-images" }); // temp local folder
 
 router.post('/create', verifyUser,upload.array("imageUrls", 6), createListing);
 router.delete('/delete/:id',verifyUser, deleteListing);

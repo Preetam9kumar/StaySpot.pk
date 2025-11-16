@@ -13,22 +13,16 @@ function CreateListing() {
         rent: false,
         parking: false,
         furnished: false,
-        office: false,
+        offer: false,
         bedrooms: 1,
         bathrooms: 1,
         regularPrice: 0,
         discountPrice: 0,
-        imageUrls: [],
         userRef: currentUser._id
     });
+
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(null);
-
-    const storeImage = async (file) => {
-        return new Promise((resolve) => {
-            setTimeout(() => resolve(URL.createObjectURL(file)), 500);
-        });
-    };
 
     const handleChange = (e) => {
         const { id, value, type, checked } = e.target;
@@ -43,35 +37,32 @@ function CreateListing() {
         }));
     };
 
-    const handleImageSubmit = async () => {
-        if (files.length > 0 && files.length <= 6) {
-            const uploadPromises = [];
-            for (let i = 0; i < files.length; i++) {
-                uploadPromises.push(storeImage(files[i]));
-            }
-            const urls = await Promise.all(uploadPromises);
-            setFormData((prev) => ({
-                ...prev,
-                imageUrls: [...prev.imageUrls, ...urls],
-            }));
-            setFiles([]);
-        } else {
-            alert("Please upload between 1 and 6 images.");
-        }
-    };
-
     const handleFormSubmit = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         try {
+            const multipartForm = new FormData();
 
-            if (formData.imageUrls.length < 1) {
-                setError('Please upload at least 1 image.')
+            Object.keys(formData).forEach(key => {
+                if (key !== "imageUrls") multipartForm.append(key, formData[key]);
+            });
+
+            // append the selected images (files state)
+            for (let i = 0; i < files.length; i++) {
+                multipartForm.append("imageUrls", files[i]);
             }
-            if (formData.regularPrice < formData.discountedPrice) {
-                setError('Discouted price must be less then regular price.')
+
+            if (files.length < 1) {
+                setError("Please upload at least 1 image.");
+                return;
+            }
+
+            if (formData.regularPrice < formData.discountPrice) {
+                setError('Discouted price must be less then regular price.');
+                return;
             }
             setLoading(true);
-            const res = await axios.post("/api/listing/create", formData, {
+
+            const res = await axios.post("/api/listing/create", multipartForm, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             if (res.data) {
@@ -88,11 +79,12 @@ function CreateListing() {
         }
     }
 
-    const handleRemoveImage = (url) => {
-        setFormData((prev) => ({
-            ...prev,
-            imageUrls: prev.imageUrls.filter((img) => img !== url),
-        }));
+    const handleRemoveImage = (index) => {
+        setFiles(prev => {
+            const arr = Array.from(prev);
+            arr.splice(index, 1);
+            return arr;
+        });
     };
 
     return (
@@ -109,7 +101,7 @@ function CreateListing() {
                             <span>Sale</span>
                         </div>
                         <div className='flex gap-2'>
-                            <input className='w-5' type="checkbox" id="rent" checked={formData.rent}  onChange={handleChange}/>
+                            <input className='w-5' type="checkbox" id="rent" checked={formData.rent} onChange={handleChange} />
                             <span>Rent</span>
                         </div>
                         <div className='flex gap-2'>
@@ -121,8 +113,8 @@ function CreateListing() {
                             <span>Furnished</span>
                         </div>
                         <div className='flex gap-2'>
-                            <input className='w-5' type="checkbox" id="office" checked={formData.office} onChange={handleChange} />
-                            <span>Office</span>
+                            <input className='w-5' type="checkbox" id="offer" checked={formData.offer} onChange={handleChange} />
+                            <span>Offer</span>
                         </div>
                     </div>
                     <div className='flex flex-wrap gap-6'>
@@ -154,23 +146,23 @@ function CreateListing() {
                     <p className='font-semibold'>Images: <span className='font-normal text-gray-600 ml-2'>The first image will be the cover (max 6)</span></p>
                     <div className='flex gap-4'>
                         <input className='p-3 border border-gray-300 rounded w-full' type="file" onChange={(e) => setFiles(e.target.files)} id="images" accept='image/*' multiple />
-                        <button type='button' onClick={handleImageSubmit} className='p-3 text-green-700 border border-green-700 rounded uppercase hover:shadow-lg disabled:opacity-80'>Upload</button>
                     </div>
-                    {formData.imageUrls.length > 0 && (
+                    {files && Array.from(files).length > 0 && (
                         <div className="flex flex-wrap gap-3 mt-2">
-                            {formData.imageUrls.map((url, idx) => (
+                            {Array.from(files).map((file, idx) => (
                                 <div
                                     key={idx}
                                     className="relative w-24 h-24 border rounded overflow-hidden"
                                 >
                                     <img
-                                        src={url}
+                                        src={URL.createObjectURL(file)}
                                         alt="preview"
                                         className="w-full h-full object-cover"
                                     />
+
                                     <button
                                         type="button"
-                                        onClick={() => handleRemoveImage(url)}
+                                        onClick={() => handleRemoveImage(idx)}
                                         className="absolute top-1 right-1 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
                                     >
                                         ×

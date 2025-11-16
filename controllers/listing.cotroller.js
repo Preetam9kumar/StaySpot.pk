@@ -55,62 +55,30 @@ export const deleteListing = async (req, res, next) => {
 export const updateListing = async (req, res, next) => {
     try {
         const listing = await Listing.findById(req.params.id);
-        if (!listing) {
-            return next(errorHandler(404, 'Listing not found!'));
-        }
-        if (req.user.id !== listing.userRef.toString()) {
+
+        if (!listing) return next(errorHandler(404, 'Listing not found!'));
+
+        if (req.user.id !== listing.userRef.toString())
             return next(errorHandler(401, 'You can only update your own listings!'));
+
+        let updatedImageUrls = [];
+
+        if (req.body.existingImages) {
+            updatedImageUrls = Array.isArray(req.body.existingImages)
+                ? req.body.existingImages
+                : JSON.parse(req.body.existingImages);
         }
 
-        console.log('=== DEBUG INFO ===');
-        console.log('req.body.imageUrls:', req.body.imageUrls);
-        console.log('req.files:', req.files);
-        console.log('req.files length:', req.files ? req.files.length : 0);
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                const result = await configuredCloudinary.uploader.upload(file.path, {
+                    folder: "uploads"
+                });
 
-        const updatedImageUrls = [];
-
-        // Check and upload non-Cloudinary URLs from imageUrls array
-        if (req.body.imageUrls && req.body.imageUrls.length > 0) {
-            const imageUrlsArray = Array.isArray(req.body.imageUrls)
-                ? req.body.imageUrls
-                : [req.body.imageUrls];
-
-            console.log('imageUrlsArray:', imageUrlsArray);
-
-            let fileIndex = 0;
-
-            for (const imageUrl of imageUrlsArray) {
-                console.log(`Processing imageUrl: ${imageUrl}`);
-
-                // If it's already a Cloudinary URL, keep it
-                if (imageUrl.includes('cloudinary.com')) {
-                    console.log('  -> Cloudinary URL, keeping it');
-                    updatedImageUrls.push(imageUrl);
-                }
-                // If it's a blob URL, upload the corresponding file from req.files
-                else if (req.files && req.files[fileIndex]) {
-                    console.log(`  -> Blob URL, uploading file at index ${fileIndex}`);
-                    console.log(`  -> File path: ${req.files[fileIndex].path}`);
-                    try {
-                        const result = await configuredCloudinary.uploader.upload(
-                            req.files[fileIndex].path,
-                            { folder: 'uploads' }
-                        );
-                        console.log(`  -> Upload success: ${result.secure_url}`);
-                        updatedImageUrls.push(result.secure_url);
-                        fs.unlinkSync(req.files[fileIndex].path);
-                        fileIndex++;
-                    } catch (uploadError) {
-                        console.error('Upload error:', uploadError);
-                        return next(errorHandler(500, `Failed to upload image: ${uploadError.message}`));
-                    }
-                } else {
-                    console.log('  -> Skipping (no matching file)');
-                }
+                updatedImageUrls.push(result.secure_url);
+                fs.unlinkSync(file.path);
             }
         }
-
-        console.log('Final updatedImageUrls:', updatedImageUrls);
 
         const updatedListingData = {
             ...req.body,
@@ -124,8 +92,8 @@ export const updateListing = async (req, res, next) => {
         );
 
         res.status(200).json(updatedListing);
+
     } catch (error) {
-        console.error('Error in updateListing:', error);
         next(error);
     }
 };
@@ -142,55 +110,51 @@ export const getListing = async (req, res, next) => {
     }
 }
 
-
 export const getListings = async (req, res, next) => {
     try {
         const limit = parseInt(req.query.limit) || 9;
         const startIndex = parseInt(req.query.startIndex) || 0;
 
-        let offer = req.query.offer;
-        if (offer === undefined || offer === 'false') {
-            offer = { $in: [false, true] }
-        }
+        const query = {};
 
-        let furnished = req.query.furnished;
-        if (furnished === undefined || furnished === 'false') {
-            furnished = { $in: [false, true] };
-        }
-
-        let parking = req.query.parking;
-        if (parking === undefined || parking === 'false') {
-            parking = { $in: [false, true] };
-        }
-
-        let type = req.query.type;
-        let rent, sale;
-
-        if (!type || type === "all") {
-            rent = { $in: [false, true] };
-            sale = { $in: [false, true] };
-        } else if (type === "rent") {
-            rent = true;
-            sale = false;
-        } else if (type === "sale") {
-            rent = false;
-            sale = true;
-        }
-
+        // Search term
         const searchTerm = req.query.searchTerm || '';
-        const sort = req.query.sort || 'createdAt';
-        const order = req.query.order || 'desc';
+        if (searchTerm) query.name = { $regex: searchTerm, $options: 'i' };
 
-        const listings = await Listing.find({
-            name: { $regex: searchTerm, $options: 'i' },
-            offer,
-            furnished,
-            parking,
-            rent,
-            sale,
-        }).sort({ [sort]: order }).limit(limit).skip(startIndex);
+        // Offer
+        if (req.query.offer === 'true') query.offer = true;
+        else if (req.query.offer === 'false') query.offer = false;
+
+        // Furnished
+        if (req.query.furnished === 'true') query.furnished = true;
+        else if (req.query.furnished === 'false') query.furnished = false;
+
+        // Parking
+        if (req.query.parking === 'true') query.parking = true;
+        else if (req.query.parking === 'false') query.parking = false;
+
+        // Type filter
+        const type = req.query.type;
+        if (type === 'rent') {
+            query.rent = true;
+            query.sale = false;
+        } else if (type === 'sale') {
+            query.rent = false;
+            query.sale = true;
+        }
+
+        // Sorting
+        const sortField = req.query.sort || 'createdAt';
+        const sortOrder = req.query.order === 'asc' ? 1 : -1;
+
+        const listings = await Listing.find(query)
+            .sort({ [sortField]: sortOrder })
+            .limit(limit)
+            .skip(startIndex);
+
         res.status(200).json(listings);
     } catch (error) {
         next(error);
     }
-}
+};
+

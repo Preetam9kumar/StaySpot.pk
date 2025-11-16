@@ -3,9 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
 import 'swiper/css/bundle';
-import 'swiper/css/navigation';
 import { Navigation } from 'swiper/modules';
 import { useSelector } from 'react-redux'
 import { FaShare, FaBath, FaChair, FaMapMarkerAlt, FaParking, FaBed } from 'react-icons/fa'
@@ -49,7 +47,7 @@ function Listing() {
             setTimeout(() => {
                 setCopied(false);
             }, 2000);
-        })
+        },0)
     }
     return (
         <main className='mt-18'>
@@ -81,21 +79,21 @@ function Listing() {
                     <div className='flex flex-col max-w-4xl mx-auto p-3 gap-6'>
                         <p className='text-2xl font-semibold'>
                             {listing.name} - ${' '}
-                            {listing.offer ? listing.discountPrice.toLocaleString('en-US') : listing.regularPrice.toLocaleString('en-US')}
+                            {listing.offer ? ('<span className="line-through">'+listing.regularPrice+'</span>'+ listing.discountPrice.toLocaleString('en-US')) : listing.regularPrice.toLocaleString('en-US')}
                             {listing.type === 'rent' && '/ month'}
                         </p>
                         <p className='flex items-center mt-6 gap-2 text-slate-600 my-2 text-sm'>
                             <FaMapMarkerAlt className='text-green-700' />
                             {listing.address}
                         </p>
-                        <div className=''>
+                        <div className='flex gap-2'>
                             <p className='bg-red-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
                                 {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
                             </p>
                             {
                                 listing.offer && (
                                     <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                                        ${+listing.reqularPrice - +listing.discountPrice}
+                                        ${+listing.regularPrice - +listing.discountPrice} Off
                                     </p>
                                 )
                             }
@@ -111,7 +109,7 @@ function Listing() {
                             </li>
                             <li className='flex items-center gap-1 whitespace-nowrap'>
                                 <FaBath className='text-lg' />
-                                {listing.bathrooms > 1 ? `${listing.bethrooms} baths ` : `${listing.bathrooms} bath `}
+                                {listing.bathrooms > 1 ? `${listing.bathrooms} baths ` : `${listing.bathrooms} bath `}
                             </li>
                             <li className='flex items-center gap-1 whitespace-nowrap'>
                                 <FaParking className='text-lg' />
@@ -123,7 +121,7 @@ function Listing() {
                             </li>
 
                         </ul>
-                        {currentUser && Listing.userRef !== currentUser._id && !contact && (
+                        {currentUser && listing.userRef !== currentUser._id && !contact && (
                             <button onClick={() => setContact(true)} className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'>
                                 Contact landlord
                             </button>

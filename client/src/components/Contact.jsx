@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import {Link} from 'react-router-dom';
 export default function Contact({listing}) {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] =useState(null);
   useEffect(() => {
     const fetchLandlord = async () =>{
       try{
-        const res = await axios.get(`/api/${listing.userRef}`);
+        const res = await axios.get(`/api/user/${listing.userRef}`);
         const data = await res.data;
         setLandlord(data)
       }catch(error){
@@ -15,10 +15,11 @@ export default function Contact({listing}) {
       }
     }
     fetchLandlord();
-  })
+  },[])
   const onChange = (e) =>{
     setMessage(e.target.value);
   }
+
   return (
     <>
     {landlord && (

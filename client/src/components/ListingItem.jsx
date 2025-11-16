@@ -1,11 +1,24 @@
 import { Link } from 'react-router-dom'
 import { MdLocationOn } from 'react-icons/md'
 
-export default function ListingItem(listing) {
+export default function ListingItem({ listing }) {
+    // const {
+    //     _id,
+    //     name,
+    //     address,
+    //     imageUrls,
+    //     description,
+    //     offer,
+    //     discountPrice,
+    //     regularPrice,
+    //     rent,
+    //     bedrooms,
+    //     bathrooms
+    // } = listing;
     return (
-        <div className='bg-white shadow-md hover:shadow-lg transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]'>
+        <div className='bg-white shadow-md hover:shadow-lg shadow-gray-800 transition-shadow overflow-hidden rounded-lg w-full sm:w-[330px]'>
             <Link to={`/listing/${listing._id}`}>
-                <img src={listing.imageUrls[0]} alt="Listing cover" className='h-[320px] sm:h-[220px] w-full object-cover hover:scale-105 transition-scale duration-300' />
+                <img src={listing.imageUrls[0] || '/placeholder.jpg'} alt="Listing cover" className='h-[320px] sm:h-[220px] w-full object-cover hover:scale-105 transition-scale duration-300' />
                 <div className='p-3 flex-col gap-2 w-full'>
                     <p className='truncate text-lg font-semibold text-slate-700 '>{listing.name}</p>
                     <div className='flex items-center gap-1'>
@@ -14,8 +27,8 @@ export default function ListingItem(listing) {
                     </div>
                     <p className='text-sm text-gray-600 line-clamp-2'>{listing.description}</p>
                     <p className='text-slate-500 mt-2 font-semibold flex items-center'>
-                      PKR  {listing.offer?listing.discountPrice.toLocalString('en-US') : listing.regularPrice.toLocalString('en-US')}
-                      {listing.rent && '/ month'}
+                        PKR  {listing.offer ? listing.discountPrice.toLocaleString('en-US') : listing.regularPrice.toLocaleString('en-US')}
+                        {listing.rent && '/ month'}
                     </p>
                     <div className='text-slate-700 flex gap-4'>
                         <div className='font-bold text-xs'>
