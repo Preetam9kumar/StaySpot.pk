@@ -9,6 +9,7 @@ function Search() {
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(false);
     const location = useLocation();
+    const [showMore, setShowMore] = useState(false);
 
     const [sidebardata, setSidebardata] = useState({
         searchTerm: '',
@@ -19,6 +20,7 @@ function Search() {
         sort: 'createdAt',
         order: 'desc',
     });
+
     const handleChange = (e) => {
         if (e.target.id === 'rent' || e.target.id === 'sale' || e.target.id === 'all') {
             setSidebardata({ ...sidebardata, type: e.target.id });
@@ -40,13 +42,13 @@ function Search() {
     const handleSubmit = (e) => {
         e.preventDefault();
         const urlParams = new URLSearchParams();
-        if(sidebardata.searchTerm != '' && sidebardata.searchTerm != undefined) urlParams.set('searchTerm', sidebardata.searchTerm);
-        if(sidebardata.type !== false) urlParams.set('type', sidebardata.type);
-        if(sidebardata.parking != false) urlParams.set('parking', sidebardata.parking);
-        if(sidebardata.furnished != false) urlParams.set('furnished', sidebardata.furnished);
-        if(sidebardata.offer != false) urlParams.set('offer', sidebardata.offer);
-        if(sidebardata.sort !== 'createdAt') urlParams.set('sort', sidebardata.sort);
-        if(sidebardata.order !== 'desc') urlParams.set('order', sidebardata.order);
+        if (sidebardata.searchTerm != '' && sidebardata.searchTerm != undefined) urlParams.set('searchTerm', sidebardata.searchTerm);
+        if (sidebardata.type !== false) urlParams.set('type', sidebardata.type);
+        if (sidebardata.parking != false) urlParams.set('parking', sidebardata.parking);
+        if (sidebardata.furnished != false) urlParams.set('furnished', sidebardata.furnished);
+        if (sidebardata.offer != false) urlParams.set('offer', sidebardata.offer);
+        if (sidebardata.sort !== 'createdAt') urlParams.set('sort', sidebardata.sort);
+        if (sidebardata.order !== 'desc') urlParams.set('order', sidebardata.order);
         const searchQuery = urlParams.toString();
         navigate(`/search?${searchQuery}`);
     }
@@ -78,12 +80,31 @@ function Search() {
             const searchQuery = urlParams.toString();
             const res = await axios.get(`/api/listing/get?${searchQuery}`);
             const data = res.data;
-            setListing(data)
+            if (data.length > 8) {
+                setShowMore(true);
+            } else {
+                setShowMore(false);
+            }
+            setListing(data);
             setLoading(false);
         }
         fetchListings();
     }, [location.search])
-    console.log(sidebardata);
+
+    const onShowMoreClick = async () => {
+        const numberOfListings = listing.length;
+        const startIndex = numberOfListings;
+        const urlParams = new URLSearchParams(location.search);
+        urlParams.set('startIndex', startIndex);
+        const searchQuery = urlParams.toString();
+        const res = await axios.get(`/api/listing/get?${searchQuery}`);
+        const data = await res.data;
+        if (data.length < 9) {
+            setShowMore(false);
+        }
+        setListing([...listing, ...data]);
+    };
+
     return (
         <div className='flex flex-col md:flex-row pt-18 md:min-h-screen'>
             <div className='p-7 border-slate-300 border-b-2 md:border-r-2 md:w-1/4 lg:w-1/5'>
@@ -144,14 +165,17 @@ function Search() {
                 {loading && (
                     <p className='text-xl text-slate-700 text-center w-full'>Loading . . . </p>
                 )}
-                <div className='flex gap-4 overflow-hidden flex-wrap'>
-                {!loading && listing && listing.map((listing) => (
-                    <ListingItem key={listing._id} listing={listing} />
-                ))}
+                <div className='flex gap-4 overflow-hidden flex-wrap py-3'>
+                    {!loading && listing && listing.map((listing) => (
+                        <ListingItem key={listing._id} listing={listing} />
+                    ))}
+                    {showMore && (
+                        <button onClick={onShowMoreClick} className='text-green-700 hover:underline p-7 text-center w-full'>Show more</button>
+                    )}
                 </div>
             </div>
         </div>
     )
 }
 
-export default Search
+export default Search;
